@@ -8,6 +8,7 @@ import (
 	"enfermeria/internal/config"
 	"enfermeria/internal/errors"
 	"enfermeria/internal/healthcheck"
+	"enfermeria/internal/nurse"
 	"enfermeria/pkg/accesslog"
 	"enfermeria/pkg/dbcontext"
 	"enfermeria/pkg/log"
@@ -91,6 +92,11 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 
 	album.RegisterHandlers(rg.Group(""),
 		album.NewService(album.NewRepository(db, logger), logger),
+		authHandler, logger,
+	)
+
+	nurse.RegisterHandlers(rg.Group(""),
+		nurse.NewService(nurse.NewRepository(db, logger), logger),
 		authHandler, logger,
 	)
 
