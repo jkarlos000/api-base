@@ -3,9 +3,9 @@ package auth
 import (
 	"context"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/qiangxue/go-rest-api/internal/entity"
-	"github.com/qiangxue/go-rest-api/internal/errors"
-	"github.com/qiangxue/go-rest-api/pkg/log"
+	"enfermeria/internal/entity"
+	"enfermeria/internal/errors"
+	"enfermeria/pkg/log"
 	"time"
 )
 

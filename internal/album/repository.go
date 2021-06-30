@@ -2,9 +2,9 @@ package album
 
 import (
 	"context"
-	"github.com/qiangxue/go-rest-api/internal/entity"
-	"github.com/qiangxue/go-rest-api/pkg/dbcontext"
-	"github.com/qiangxue/go-rest-api/pkg/log"
+	"enfermeria/internal/entity"
+	"enfermeria/pkg/dbcontext"
+	"enfermeria/pkg/log"
 )
 
 // Repository encapsulates the logic to access albums from the data source.

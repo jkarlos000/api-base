@@ -2,9 +2,9 @@ package auth
 
 import (
 	"context"
-	"github.com/qiangxue/go-rest-api/internal/entity"
-	"github.com/qiangxue/go-rest-api/internal/errors"
-	"github.com/qiangxue/go-rest-api/pkg/log"
+	"enfermeria/internal/entity"
+	"enfermeria/internal/errors"
+	"enfermeria/pkg/log"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

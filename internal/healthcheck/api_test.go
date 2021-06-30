@@ -1,8 +1,8 @@
 package healthcheck
 
 import (
-	"github.com/qiangxue/go-rest-api/internal/test"
-	"github.com/qiangxue/go-rest-api/pkg/log"
+	"enfermeria/internal/test"
+	"enfermeria/pkg/log"
 	"net/http"
 	"testing"
 )
