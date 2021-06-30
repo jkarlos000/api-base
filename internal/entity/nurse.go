@@ -6,6 +6,9 @@ type Nurse struct {
 	UserID         string `json:"user_id"`
 	HaveFullAccess bool   `json:"have_full_access"`
 	IsActive       bool   `json:"is_active"`
+	IsWorking		bool `json:"is_working"`
+	Latitude		*float32 `json:"latitude"`
+	Longitude		*float32 `json:"longitude"`
 	Username       string `json:"username" db:"username"`
 	FirstName      string `json:"first_name" db:"first_name"`
 	LastName       string `json:"last_name" db:"last_name"`
