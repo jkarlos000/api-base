@@ -1,4 +1,4 @@
-package nurse
+package session
 
 import (
 	"context"
@@ -11,23 +11,23 @@ import (
 	"time"
 )
 
-// Service encapsulates usecase logic for nurses.
+// Service encapsulates uses case logic for sessions.
 type Service interface {
-	Get(ctx context.Context, id string) (Nurse, error)
-	Query(ctx context.Context, offset, limit int, term string, filters map[string]interface{}) ([]Nurse, error)
+	Get(ctx context.Context, id string) (Session, error)
+	Query(ctx context.Context, offset, limit int, term string, filters map[string]interface{}) ([]Session, error)
 	Count(ctx context.Context) (int, error)
-	Create(ctx context.Context, input CreateNurseRequest) (Nurse, error)
-	Update(ctx context.Context, id string, input UpdateNurseRequest) (Nurse, error)
-	Delete(ctx context.Context, id string) (Nurse, error)
+	Create(ctx context.Context, input CreateSessionRequest) (Session, error)
+	Update(ctx context.Context, id string, input UpdateSessionRequest) (Session, error)
+	Delete(ctx context.Context, id string) (Session, error)
 }
 
-// Nurse represents the data about an nurse.
-type Nurse struct {
-	entity.Nurse
+// Session represents the data about an session.
+type Session struct {
+	entity.Session
 }
 
-// CreateNurseRequest represents an user creation request.
-type CreateNurseRequest struct {
+// CreateSessionRequest represents an user creation request.
+type CreateSessionRequest struct {
 	FirstName            string  `json:"first_name"`
 	LastName             string  `json:"last_name"`
 	Username             string  `json:"username"`
@@ -36,8 +36,8 @@ type CreateNurseRequest struct {
 	Longitude 			*float32 `json:"longitude"`
 }
 
-// Validate validates the CreateNurseRequest fields.
-func (m CreateNurseRequest) Validate() error {
+// Validate validates the CreateSessionRequest fields.
+func (m CreateSessionRequest) Validate() error {
 	return validation.ValidateStruct(&m,
 		validation.Field(&m.FirstName, validation.Required, validation.Length(0, 128)),
 		validation.Field(&m.LastName, validation.Required, validation.Length(0, 128)),
@@ -47,8 +47,8 @@ func (m CreateNurseRequest) Validate() error {
 		validation.Field(&m.Longitude, validation.Required),
 	)
 }
-// UpdateNurseRequest represents an user update request.
-type UpdateNurseRequest struct {
+// UpdateSessionRequest represents an user update request.
+type UpdateSessionRequest struct {
 	FirstName            string  `json:"first_name"`
 	LastName             string  `json:"last_name"`
 	Username             string  `json:"username"`
@@ -60,7 +60,7 @@ type UpdateNurseRequest struct {
 }
 
 // Validate validates the CreateUserRequest fields.
-func (m UpdateNurseRequest) Validate() error {
+func (m UpdateSessionRequest) Validate() error {
 	return validation.ValidateStruct(&m,
 		validation.Field(&m.FirstName, validation.Required, validation.Length(0, 128)),
 		validation.Field(&m.LastName, validation.Required, validation.Length(0, 128)),
@@ -77,36 +77,36 @@ type service struct {
 	logger log.Logger
 }
 
-// NewService creates a new nurse service.
+// NewService creates a new session service.
 func NewService(repo Repository, logger log.Logger) Service {
 	return service{repo, logger}
 }
 
-// Get returns the nurse with the specified the nurse ID.
-func (s service) Get(ctx context.Context, id string) (Nurse, error) {
-	nurse, err := s.repo.Get(ctx, id)
+// Get returns the session with the specified the session ID.
+func (s service) Get(ctx context.Context, id string) (Session, error) {
+	session, err := s.repo.Get(ctx, id)
 	if err != nil {
-		return Nurse{}, err
+		return Session{}, err
 	}
-	return Nurse{nurse}, nil
+	return Session{session}, nil
 }
 
-// Create creates a new nurse.
-func (s service) Create(ctx context.Context, req CreateNurseRequest) (Nurse, error) {
+// Create creates a new session.
+func (s service) Create(ctx context.Context, req CreateSessionRequest) (Session, error) {
 	req.FirstName = strings.TrimSpace(req.FirstName)
 	req.LastName = strings.TrimSpace(req.LastName)
 	req.Username = strings.TrimSpace(req.Username)
 
-	nurseID := entity.GenerateID()
+	sessionID := entity.GenerateID()
 	userID := entity.GenerateID()
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.MinCost)
 	if err != nil {
-		return Nurse{}, err
+		return Session{}, err
 	}
 
 	if err := req.Validate(); err != nil {
-		return Nurse{}, err
+		return Session{}, err
 	}
 	now := time.Now()
 	err = s.repo.Create(ctx, entity.User{
@@ -118,8 +118,8 @@ func (s service) Create(ctx context.Context, req CreateNurseRequest) (Nurse, err
 		LastName:  req.LastName,
 		CreatedAt: now,
 		UpdatedAt: &now,
-	}, entity.Nurse{
-		ID:             nurseID,
+	}, entity.Session{
+		ID:             sessionID,
 		UserID:         userID,
 		HaveFullAccess: false,
 		IsActive:       true,
@@ -128,18 +128,18 @@ func (s service) Create(ctx context.Context, req CreateNurseRequest) (Nurse, err
 		Longitude:      req.Longitude,
 	})
 	if err != nil {
-		return Nurse{}, err
+		return Session{}, err
 	}
-	return s.Get(ctx, nurseID)
+	return s.Get(ctx, sessionID)
 }
 
-// Update updates the nurse with the specified ID.
-func (s service) Update(ctx context.Context, id string, req UpdateNurseRequest) (Nurse, error) {
+// Update updates the session with the specified ID.
+func (s service) Update(ctx context.Context, id string, req UpdateSessionRequest) (Session, error) {
 	var user entity.User
 	excludes := []string{"Roles", "Permissions", "CreatedAt"}
 
 	if err := req.Validate(); err != nil {
-		return Nurse{}, err
+		return Session{}, err
 	}
 
 	now := time.Now()
@@ -148,11 +148,11 @@ func (s service) Update(ctx context.Context, id string, req UpdateNurseRequest) 
 	if err != nil {
 		return res, err
 	}
-	nurse := res.Nurse
-	nurse.Latitude = req.Latitude
-	nurse.Longitude = req.Longitude
+	session := res.Session
+	session.Latitude = req.Latitude
+	session.Longitude = req.Longitude
 
-	user.ID = nurse.UserID
+	user.ID = session.UserID
 	user.Username = req.Username
 	user.FirstName = req.FirstName
 	user.LastName = req.LastName
@@ -177,7 +177,7 @@ func (s service) Update(ctx context.Context, id string, req UpdateNurseRequest) 
 		res.IsActive = true
 	}
 	// Fixme refactor repo.Update - remove user and excludes
-	if err := s.repo.Update(ctx, user, nurse, excludes); err != nil {
+	if err := s.repo.Update(ctx, user, session, excludes); err != nil {
 		return res, err
 	}
 
@@ -190,32 +190,32 @@ func (s service) Update(ctx context.Context, id string, req UpdateNurseRequest) 
 	return res, nil
 }
 
-// Delete deletes the nurse with the specified ID.
-func (s service) Delete(ctx context.Context, id string) (Nurse, error) {
-	nurse, err := s.Get(ctx, id)
+// Delete deletes the session with the specified ID.
+func (s service) Delete(ctx context.Context, id string) (Session, error) {
+	session, err := s.Get(ctx, id)
 	if err != nil {
-		return Nurse{}, err
+		return Session{}, err
 	}
 	if err = s.repo.Delete(ctx, id); err != nil {
-		return Nurse{}, err
+		return Session{}, err
 	}
-	return nurse, nil
+	return session, nil
 }
 
-// Count returns the number of nurses.
+// Count returns the number of sessions.
 func (s service) Count(ctx context.Context) (int, error) {
 	return s.repo.Count(ctx)
 }
 
-// Query returns the nurses with the specified offset and limit.
-func (s service) Query(ctx context.Context, offset, limit int, term string, filters map[string]interface{}) ([]Nurse, error) {
+// Query returns the sessions with the specified offset and limit.
+func (s service) Query(ctx context.Context, offset, limit int, term string, filters map[string]interface{}) ([]Session, error) {
 	items, err := s.repo.Query(ctx, offset, limit, term, filters)
 	if err != nil {
 		return nil, err
 	}
-	result := []Nurse{}
+	result := []Session{}
 	for _, item := range items {
-		result = append(result, Nurse{item})
+		result = append(result, Session{item})
 	}
 	return result, nil
 }

@@ -1,17 +1,17 @@
 package main
 
 import (
-	"context"
-	"database/sql"
 	"backend/internal/album"
 	"backend/internal/auth"
 	"backend/internal/config"
 	"backend/internal/errors"
 	"backend/internal/healthcheck"
-	"backend/internal/nurse"
+	"backend/internal/session"
 	"backend/pkg/accesslog"
 	"backend/pkg/dbcontext"
 	"backend/pkg/log"
+	"context"
+	"database/sql"
 	"flag"
 	"fmt"
 	"github.com/go-ozzo/ozzo-dbx"
@@ -36,14 +36,13 @@ func main() {
 	// create root logger tagged with server version
 	logger := log.New().With(nil, "version", Version)
 
-	// check if path exists
-	if err := os.Mkdir("/path/to/whatever", 0755); os.IsExist(err) {
-		// triggers if dir already exists
-	}
+
 
 	if path, err := os.Getwd(); err == nil {
-		if err := os.Mkdir(path+"/storage/diagrams", 0755); !os.IsExist(err) {
-			logger.Info("Creating path: "+path+"/storage/diagrams")
+		if err := os.Mkdir(path+"/storage", 0755); !os.IsExist(err) {
+			if err := os.Mkdir(path+"/storage/diagrams", 0755); !os.IsExist(err) {
+				logger.Info("Creating path: "+path+"/storage/diagrams")
+			}
 		}
 	}
 
@@ -108,8 +107,8 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 		authHandler, logger,
 	)
 
-	nurse.RegisterHandlers(rg.Group(""),
-		nurse.NewService(nurse.NewRepository(db, logger), logger),
+	session.RegisterHandlers(rg.Group(""),
+		session.NewService(session.NewRepository(db, logger), logger),
 		authHandler, logger,
 	)
 
