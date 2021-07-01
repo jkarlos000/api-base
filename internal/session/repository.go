@@ -5,8 +5,10 @@ import (
 	"backend/pkg/dbcontext"
 	"backend/pkg/log"
 	"context"
+	"encoding/hex"
 	"fmt"
 	dbx "github.com/go-ozzo/ozzo-dbx"
+	"math/rand"
 )
 
 // Repository encapsulates the logic to access sessions from the data source.
@@ -18,9 +20,9 @@ type Repository interface {
 	// Query returns the list of sessions with the given offset and limit.
 	Query(ctx context.Context, offset, limit int, term string, filters map[string]interface{}) ([]entity.Session, error)
 	// Create saves a new session in the storage.
-	Create(ctx context.Context, user entity.User, session entity.Session) error
+	Create(ctx context.Context, session entity.Session) error
 	// Update updates the session with given ID in the storage.
-	Update(ctx context.Context, user entity.User, session entity.Session, excludes []string) error
+	Update(ctx context.Context, session entity.Session, excludes []string) error
 	// Delete removes the session with given ID from the storage.
 	Delete(ctx context.Context, id string) error
 }
@@ -50,25 +52,36 @@ func (r repository) Get(ctx context.Context, id string) (entity.Session, error) 
 
 // Create saves a new session record in the database.
 // It returns the ID of the newly inserted session record.
-func (r repository) Create(ctx context.Context, user entity.User, session entity.Session) error {
+func (r repository) Create(ctx context.Context, session entity.Session) error {
 	var role entity.Role
-
-	if err := r.db.With(ctx).Model(&user).Exclude("Roles", "Permissions").Insert(); err != nil {
+	if err := r.db.With(ctx).Select().From("roles").Where(dbx.HashExp{"name": "owner"}).One(&role); err != nil {
 		return err
 	}
-
-	if err := r.db.With(ctx).Model(&session).Exclude("FirstName", "LastName", "Username", "IsActive").Insert(); err != nil {
-		return err
+	var q entity.Session
+	b := true
+	for b {
+		if err := r.db.With(ctx).Select().From("sessions").Where(dbx.HashExp{"slug": session.Slug}).One(&q); err == nil {
+			session.Slug = func(length int) string {
+				b := make([]byte, length)
+				if _, err := rand.Read(b); err != nil {
+					return ""
+				}
+				return hex.EncodeToString(b)
+			}(5)
+		} else {
+			b = false
+		}
 	}
 
-	if err := r.db.With(ctx).Select().From("roles").Where(dbx.HashExp{"name": "enfermera"}).One(&role); err != nil {
-		return err
-	}
-
-	if _, err := r.db.With(ctx).Insert("role_user", dbx.Params{
+	if _, err := r.db.With(ctx).Insert("rooms", dbx.Params{
+		"session_id": session.ID,
+		"user_id": session.Owner,
 		"role_id": role.ID,
-		"user_id": user.ID,
 	}).Execute(); err != nil {
+		return err
+	}
+
+	if err := r.db.With(ctx).Model(&session).Insert(); err != nil {
 		return err
 	}
 
@@ -77,8 +90,8 @@ func (r repository) Create(ctx context.Context, user entity.User, session entity
 }
 
 // Update saves the changes to an session in the database.
-func (r repository) Update(ctx context.Context, user entity.User, session entity.Session, excludes []string) error {
-	return r.db.With(ctx).Model(&user).Update()
+func (r repository) Update(ctx context.Context, session entity.Session, excludes []string) error {
+	return r.db.With(ctx).Model(&session).Update()
 }
 
 // Delete deletes an session with the specified ID from the database.
@@ -101,11 +114,30 @@ func (r repository) Count(ctx context.Context) (int, error) {
 func (r repository) Query(ctx context.Context, offset, limit int, term string, filters map[string]interface{}) ([]entity.Session, error) {
 	var sessions []entity.Session
 
-	if term == "search" {
-		fmt.Println("filters")
-		fmt.Println(filters)
-		fmt.Println("filters")
-		query := fmt.Sprintf("select n.id, u.first_name as first_name, u.last_name as last_name from sessions as n inner join users as u on n.user_id = u.id where CONCAT(u.first_name, ' ', u.last_name) like '%%%s%%'", filters["query"])
+	if term == "user" {
+		query := fmt.Sprintf("select s.id, u.id as owner, u.first_name as first_name, u.last_name as last_name, s.slug, s.updated_at from sessions as s inner join users as u on s.owner = u.id where s.owner = %%%s%%", filters["query"])
+		q := r.db.With(ctx).NewQuery(query)
+		err := q.All(&sessions)
+
+		return sessions, err
+	}
+
+	if term == "active" {
+		active := 1
+		if filters["query"] == "active" {
+			active = 1
+		} else if filters["query"] == "inactive" {
+			active = 0
+		}
+		query := fmt.Sprintf("select s.id, u.id as owner, u.first_name as first_name, u.last_name as last_name, s.slug, s.updated_at from sessions as s inner join users as u on s.owner = u.id where s.is_active = %%%d%%", active)
+		q := r.db.With(ctx).NewQuery(query)
+		err := q.All(&sessions)
+
+		return sessions, err
+	}
+
+	if term == "active" {
+		query := fmt.Sprintf("select s.id, u.id as owner, u.first_name as first_name, u.last_name as last_name, s.slug, s.updated_at from sessions as s inner join users as u on s.owner = u.id where CONCAT(u.first_name, ' ', u.last_name) like '%%%s%%'", filters["query"])
 		q := r.db.With(ctx).NewQuery(query)
 		err := q.All(&sessions)
 
@@ -114,7 +146,7 @@ func (r repository) Query(ctx context.Context, offset, limit int, term string, f
 
 	err := r.db.With(ctx).
 		Select("sessions.*", "u.first_name", "u.last_name", "u.username", "u.is_active").
-		LeftJoin("users as u", dbx.NewExp("u.id = sessions.user_id")).
+		LeftJoin("users as u", dbx.NewExp("u.id = sessions.owner")).
 		Offset(int64(offset)).
 		Limit(int64(limit)).
 		All(&sessions)

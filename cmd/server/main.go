@@ -51,8 +51,6 @@ func main() {
 		Cache:      autocert.DirCache("certs"),            //Folder for storing certificates
 	}
 
-
-
 	if path, err := os.Getwd(); err == nil {
 		if err := os.Mkdir(path+"/storage", 0755); !os.IsExist(err) {
 			if err := os.Mkdir(path+"/storage/diagrams", 0755); !os.IsExist(err) {

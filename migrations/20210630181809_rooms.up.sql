@@ -1,4 +1,4 @@
-CREATE TABLE room
+CREATE TABLE rooms
 (
     session_id      VARCHAR(36) NOT NULL,
     user_id         VARCHAR(36) NOT NULL,

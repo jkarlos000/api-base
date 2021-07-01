@@ -6,6 +6,8 @@ import "time"
 type Session struct {
 	ID             string `json:"id"`
 	Owner         string `json:"owner"`
+	Tittle			string `json:"tittle"`
+	Description		string `json:"description"`
 	Diagram			string `json:"diagram"`
 	Slug			string `json:"slug"`
 	Password		string `json:"password"`

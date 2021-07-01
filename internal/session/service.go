@@ -1,12 +1,15 @@
 package session
 
 import (
-	"context"
+	"backend/internal/auth"
 	"backend/internal/entity"
 	"backend/pkg/log"
+	"context"
+	"encoding/hex"
 	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"golang.org/x/crypto/bcrypt"
+	"math/rand"
 	"strings"
 	"time"
 )
@@ -28,47 +31,35 @@ type Session struct {
 
 // CreateSessionRequest represents an user creation request.
 type CreateSessionRequest struct {
-	FirstName            string  `json:"first_name"`
-	LastName             string  `json:"last_name"`
-	Username             string  `json:"username"`
-	Password             string  `json:"password"`
-	Latitude 			*float32 `json:"latitude"`
-	Longitude 			*float32 `json:"longitude"`
+	Tittle		string `json:"tittle"`
+	Description	string `json:"description"`
+	Password	*string `json:"password"`
 }
 
 // Validate validates the CreateSessionRequest fields.
 func (m CreateSessionRequest) Validate() error {
 	return validation.ValidateStruct(&m,
-		validation.Field(&m.FirstName, validation.Required, validation.Length(0, 128)),
-		validation.Field(&m.LastName, validation.Required, validation.Length(0, 128)),
-		validation.Field(&m.Username, validation.Required, validation.Length(0, 128)),
-		validation.Field(&m.Password, validation.Required, validation.Length(0, 128)),
-		validation.Field(&m.Latitude, validation.Required),
-		validation.Field(&m.Longitude, validation.Required),
+		validation.Field(&m.Tittle, validation.Required, validation.Length(0, 128)),
+		validation.Field(&m.Description, validation.Length(0, 128)),
+		validation.Field(&m.Password, validation.Length(0, 128)),
 	)
 }
 // UpdateSessionRequest represents an user update request.
 type UpdateSessionRequest struct {
-	FirstName            string  `json:"first_name"`
-	LastName             string  `json:"last_name"`
-	Username             string  `json:"username"`
-	Password             *string `json:"password"`
-	Latitude 			*float32 `json:"latitude"`
-	Longitude 			*float32 `json:"longitude"`
-	Rol					entity.Role `json:"rol"`
-	IsActive			*bool `json:"is_active"`
+	ID			string `json:"id"`
+	Tittle		string `json:"tittle"`
+	Description	string `json:"description"`
+	Password	*string `json:"password"`
+	IsActive	*bool `json:"is_active"`
 }
 
 // Validate validates the CreateUserRequest fields.
 func (m UpdateSessionRequest) Validate() error {
 	return validation.ValidateStruct(&m,
-		validation.Field(&m.FirstName, validation.Required, validation.Length(0, 128)),
-		validation.Field(&m.LastName, validation.Required, validation.Length(0, 128)),
-		validation.Field(&m.Username, validation.Required, validation.Length(0, 128)),
-		validation.Field(&m.Latitude, validation.Required),
-		validation.Field(&m.Longitude, validation.Required),
-		validation.Field(&m.Rol, validation.Required),
-		validation.Field(&m.IsActive, validation.Required),
+		validation.Field(&m.ID, validation.Required, validation.Length(0, 128)),
+		validation.Field(&m.Tittle, validation.Required, validation.Length(0, 128)),
+		validation.Field(&m.Description, validation.Required, validation.Length(0, 128)),
+		validation.Field(&m.Password, validation.Length(0, 128)),
 	)
 }
 
@@ -93,39 +84,37 @@ func (s service) Get(ctx context.Context, id string) (Session, error) {
 
 // Create creates a new session.
 func (s service) Create(ctx context.Context, req CreateSessionRequest) (Session, error) {
-	req.FirstName = strings.TrimSpace(req.FirstName)
-	req.LastName = strings.TrimSpace(req.LastName)
-	req.Username = strings.TrimSpace(req.Username)
-
-	sessionID := entity.GenerateID()
-	userID := entity.GenerateID()
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.MinCost)
-	if err != nil {
-		return Session{}, err
+	req.Tittle = strings.TrimSpace(req.Tittle)
+	req.Description = strings.TrimSpace(req.Description)
+	if req.Password != nil {
+		password := strings.TrimSpace(*req.Password)
+		if len(password) > 0 {
+			hash, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.MinCost)
+			if err != nil {
+				fmt.Println(err)
+			}
+			password = string(hash)
+			req.Password = &password
+		}
 	}
 
+	sessionID := entity.GenerateID()
+	userID := auth.CurrentUser(ctx).GetID()
+	slugName := generateSecureSlug(5)
 	if err := req.Validate(); err != nil {
 		return Session{}, err
 	}
 	now := time.Now()
-	err = s.repo.Create(ctx, entity.User{
-		ID:        userID,
-		Username:  req.Username,
-		Password:  string(hash),
-		IsActive:  true,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		CreatedAt: now,
-		UpdatedAt: &now,
-	}, entity.Session{
-		ID:             sessionID,
-		UserID:         userID,
-		HaveFullAccess: false,
-		IsActive:       true,
-		IsWorking:      false,
-		Latitude:       req.Latitude,
-		Longitude:      req.Longitude,
+	err := s.repo.Create(ctx, entity.Session{
+		ID:          sessionID,
+		Owner:       userID,
+		Tittle:      req.Tittle,
+		Description: req.Description,
+		Slug:        slugName,
+		Password:    *req.Password,
+		IsActive:    true,
+		CreatedAt:   now,
+		UpdatedAt:   &now,
 	})
 	if err != nil {
 		return Session{}, err
@@ -135,59 +124,55 @@ func (s service) Create(ctx context.Context, req CreateSessionRequest) (Session,
 
 // Update updates the session with the specified ID.
 func (s service) Update(ctx context.Context, id string, req UpdateSessionRequest) (Session, error) {
-	var user entity.User
-	excludes := []string{"Roles", "Permissions", "CreatedAt"}
-
+	req.Tittle = strings.TrimSpace(req.Tittle)
+	req.Description = strings.TrimSpace(req.Description)
+	if req.Password != nil {
+		password := strings.TrimSpace(*req.Password)
+		if len(password) > 0 {
+			hash, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.MinCost)
+			if err != nil {
+				fmt.Println(err)
+			}
+			password = string(hash)
+			req.Password = &password
+		}
+	}
 	if err := req.Validate(); err != nil {
 		return Session{}, err
 	}
-
-	now := time.Now()
 
 	res, err := s.Get(ctx, id)
 	if err != nil {
 		return res, err
 	}
 	session := res.Session
-	session.Latitude = req.Latitude
-	session.Longitude = req.Longitude
-
-	user.ID = session.UserID
-	user.Username = req.Username
-	user.FirstName = req.FirstName
-	user.LastName = req.LastName
-	user.UpdatedAt = &now
-
-	if req.Password != nil {
-		hash, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.MinCost)
-		if err != nil {
-			fmt.Println(err)
-		}
-
-		user.Password = string(hash)
-	} else {
-		excludes = append(excludes, "Password")
+	if session.Tittle != req.Tittle {
+		session.Tittle = req.Tittle
 	}
-
+	if session.Description != req.Description {
+		session.Description = req.Description
+	}
 	if req.IsActive != nil && *req.IsActive == false {
-		user.IsActive = false
-		res.IsActive = false
+		session.IsActive = false
 	} else {
-		user.IsActive = true
-		res.IsActive = true
+		session.IsActive = true
 	}
+	if req.Password != nil {
+		if len(*req.Password) > 0 {
+			session.Password = *req.Password
+		}
+	}
+	now := time.Now()
+	session.UpdatedAt = &now
+
 	// Fixme refactor repo.Update - remove user and excludes
-	if err := s.repo.Update(ctx, user, session, excludes); err != nil {
+	if err := s.repo.Update(ctx, session, []string{}); err != nil {
 		return res, err
 	}
 
-	res.Username = req.Username
-	res.FirstName = req.FirstName
-	res.LastName = req.LastName
-	res.Latitude = req.Latitude
-	res.Longitude = req.Longitude
+	q, _ := s.Get(ctx, req.ID)
 
-	return res, nil
+	return q, nil
 }
 
 // Delete deletes the session with the specified ID.
@@ -218,4 +203,12 @@ func (s service) Query(ctx context.Context, offset, limit int, term string, filt
 		result = append(result, Session{item})
 	}
 	return result, nil
+}
+
+func generateSecureSlug(length int) string {
+	b := make([]byte, length)
+	if _, err := rand.Read(b); err != nil {
+		return ""
+	}
+	return hex.EncodeToString(b)
 }
