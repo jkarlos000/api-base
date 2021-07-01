@@ -2,9 +2,9 @@ package auth
 
 import (
 	"context"
-	"enfermeria/internal/errors"
-	"enfermeria/internal/test"
-	"enfermeria/pkg/log"
+	"backend/internal/errors"
+	"backend/internal/test"
+	"backend/pkg/log"
 	"net/http"
 	"testing"
 )

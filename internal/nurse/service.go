@@ -2,8 +2,8 @@ package nurse
 
 import (
 	"context"
-	"enfermeria/internal/entity"
-	"enfermeria/pkg/log"
+	"backend/internal/entity"
+	"backend/pkg/log"
 	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 	"golang.org/x/crypto/bcrypt"

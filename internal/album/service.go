@@ -3,8 +3,8 @@ package album
 import (
 	"context"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"enfermeria/internal/entity"
-	"enfermeria/pkg/log"
+	"backend/internal/entity"
+	"backend/pkg/log"
 	"time"
 )
 

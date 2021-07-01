@@ -5,9 +5,9 @@ VALUES ('967d5bb5-3a7a-4d5e-8a6c-febc8c5b3f13', 'Hollywood''s Bleeding', '2019-1
        ('b0a24f12-428f-4ff5-84d5-bc1fdcff6f03', 'Lover', '2019-10-11 19:43:18'::timestamp, '2019-10-11 19:43:18'::timestamp),
        ('e0bb80ec-75a6-4348-bfc3-6ac1e89b195e', 'So Much Fun', '2019-10-12 12:16:02'::timestamp, '2019-10-12 12:16:02'::timestamp);
 INSERT INTO roles (id, name)
-VALUES ('967d5bb5-3a7a-4d5e-8a6c-febc8c5b3f13', 'enfermera'),
-       ('c809bf15-bc2c-4621-bb96-70af96fd5d67', 'jefa de enfermeras'),
-       ('2367710a-d4fb-49f5-8860-557b337386dd', 'paciente'),
-       ('e0bb80ec-75a6-4348-bfc3-6ac1e89b195e', 'paciente de tercera edad'),
-       ('b0a24f12-428f-4ff5-84d5-bc1fdcff6f03', 'paciente critico')
+VALUES ('967d5bb5-3a7a-4d5e-8a6c-febc8c5b3f13', 'participante'),
+       ('c809bf15-bc2c-4621-bb96-70af96fd5d67', 'owner'),
+       ('2367710a-d4fb-49f5-8860-557b337386dd', 'visitante'),
+       ('e0bb80ec-75a6-4348-bfc3-6ac1e89b195e', 'bloqueado'),
+       ('b0a24f12-428f-4ff5-84d5-bc1fdcff6f03', 'baneado')
 

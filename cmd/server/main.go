@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"database/sql"
-	"enfermeria/internal/album"
-	"enfermeria/internal/auth"
-	"enfermeria/internal/config"
-	"enfermeria/internal/errors"
-	"enfermeria/internal/healthcheck"
-	"enfermeria/internal/nurse"
-	"enfermeria/pkg/accesslog"
-	"enfermeria/pkg/dbcontext"
-	"enfermeria/pkg/log"
+	"backend/internal/album"
+	"backend/internal/auth"
+	"backend/internal/config"
+	"backend/internal/errors"
+	"backend/internal/healthcheck"
+	"backend/internal/nurse"
+	"backend/pkg/accesslog"
+	"backend/pkg/dbcontext"
+	"backend/pkg/log"
 	"flag"
 	"fmt"
 	"github.com/go-ozzo/ozzo-dbx"
@@ -22,6 +22,8 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	f "github.com/go-ozzo/ozzo-routing/v2/file"
 )
 
 // Version indicates the current version of the application.
@@ -33,6 +35,17 @@ func main() {
 	flag.Parse()
 	// create root logger tagged with server version
 	logger := log.New().With(nil, "version", Version)
+
+	// check if path exists
+	if err := os.Mkdir("/path/to/whatever", 0755); os.IsExist(err) {
+		// triggers if dir already exists
+	}
+
+	if path, err := os.Getwd(); err == nil {
+		if err := os.Mkdir(path+"/storage/diagrams", 0755); !os.IsExist(err) {
+			logger.Info("Creating path: "+path+"/storage/diagrams")
+		}
+	}
 
 	// load application configurations
 	cfg, err := config.Load(*flagConfig, logger)
@@ -88,7 +101,7 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 
 	authHandler := auth.Handler(cfg.JWTSigningKey)
 
-	// lógica para enfermeria.
+	// lógica para backend.
 
 	album.RegisterHandlers(rg.Group(""),
 		album.NewService(album.NewRepository(db, logger), logger),
@@ -104,6 +117,10 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 		auth.NewService(db, cfg.JWTSigningKey, cfg.JWTExpiration, logger),
 		logger,
 	)
+
+	router.Get("/*", f.Server(f.PathMap{
+		"/v1/diagrams": "/storage/diagrams",
+	}))
 
 	return router
 }

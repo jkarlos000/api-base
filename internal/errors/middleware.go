@@ -6,7 +6,7 @@ import (
 	"fmt"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	validation "github.com/go-ozzo/ozzo-validation/v4"
-	"enfermeria/pkg/log"
+	"backend/pkg/log"
 	"net/http"
 	"runtime/debug"
 )

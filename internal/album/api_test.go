@@ -1,10 +1,10 @@
 package album
 
 import (
-	"enfermeria/internal/auth"
-	"enfermeria/internal/entity"
-	"enfermeria/internal/test"
-	"enfermeria/pkg/log"
+	"backend/internal/auth"
+	"backend/internal/entity"
+	"backend/internal/test"
+	"backend/pkg/log"
 	"net/http"
 	"testing"
 	"time"

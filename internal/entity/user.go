@@ -53,7 +53,7 @@ func (u User) HasRole(roles ...string) bool {
 	return false
 }
 
-// GetStatus returns the user status.
+// IsUserActive GetStatus returns the user status.
 func (u User) IsUserActive() bool {
 	return u.IsActive
 }

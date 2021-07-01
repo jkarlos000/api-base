@@ -1,8 +1,8 @@
 package auth
 
 import (
-	"enfermeria/internal/errors"
-	"enfermeria/pkg/log"
+	"backend/internal/errors"
+	"backend/pkg/log"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 )
 

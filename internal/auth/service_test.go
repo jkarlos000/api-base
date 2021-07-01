@@ -2,9 +2,9 @@ package auth
 
 import (
 	"context"
-	"enfermeria/internal/entity"
-	"enfermeria/internal/errors"
-	"enfermeria/pkg/log"
+	"backend/internal/entity"
+	"backend/internal/errors"
+	"backend/pkg/log"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

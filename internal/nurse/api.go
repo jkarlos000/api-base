@@ -2,9 +2,9 @@ package nurse
 
 import (
 	"encoding/json"
-	"enfermeria/internal/errors"
-	"enfermeria/pkg/log"
-	"enfermeria/pkg/pagination"
+	"backend/internal/errors"
+	"backend/pkg/log"
+	"backend/pkg/pagination"
 	"github.com/go-ozzo/ozzo-routing/v2"
 	"net/http"
 )
