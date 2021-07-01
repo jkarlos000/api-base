@@ -7,6 +7,7 @@ import (
 	"backend/internal/errors"
 	"backend/internal/healthcheck"
 	"backend/internal/session"
+	"backend/internal/user"
 	"backend/pkg/accesslog"
 	"backend/pkg/dbcontext"
 	"backend/pkg/log"
@@ -133,6 +134,11 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 	auth.RegisterHandlers(rg.Group(""),
 		auth.NewService(db, cfg.JWTSigningKey, cfg.JWTExpiration, logger),
 		logger,
+	)
+
+	user.RegisterHandlers(rg.Group(""),
+		user.NewService(user.NewRepository(db, logger), logger),
+		authHandler,logger,
 	)
 
 	router.Get("/*", f.Server(f.PathMap{
