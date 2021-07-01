@@ -30,12 +30,12 @@ type resource struct {
 }
 
 func (r resource) get(c *routing.Context) error {
-	nurse, err := r.service.Get(c.Request.Context(), c.Param("id"))
+	session, err := r.service.Get(c.Request.Context(), c.Param("id"))
 	if err != nil {
 		return err
 	}
 
-	return c.Write(nurse)
+	return c.Write(session)
 }
 
 func (r resource) query(c *routing.Context) error {
@@ -60,39 +60,39 @@ func (r resource) query(c *routing.Context) error {
 }
 
 func (r resource) create(c *routing.Context) error {
-	var input CreateNurseRequest
+	var input CreateSessionRequest
 	if err := c.Read(&input); err != nil {
 		r.logger.With(c.Request.Context()).Info(err)
 		return errors.BadRequest("")
 	}
-	nurse, err := r.service.Create(c.Request.Context(), input)
+	session, err := r.service.Create(c.Request.Context(), input)
 	if err != nil {
 		return err
 	}
 
-	return c.WriteWithStatus(nurse, http.StatusCreated)
+	return c.WriteWithStatus(session, http.StatusCreated)
 }
 
 func (r resource) update(c *routing.Context) error {
-	var input UpdateNurseRequest
+	var input UpdateSessionRequest
 	if err := c.Read(&input); err != nil {
 		r.logger.With(c.Request.Context()).Info(err)
 		return errors.BadRequest("")
 	}
 
-	nurse, err := r.service.Update(c.Request.Context(), c.Param("id"), input)
+	session, err := r.service.Update(c.Request.Context(), c.Param("id"), input)
 	if err != nil {
 		return err
 	}
 
-	return c.Write(nurse)
+	return c.Write(session)
 }
 
 func (r resource) delete(c *routing.Context) error {
-	nurse, err := r.service.Delete(c.Request.Context(), c.Param("id"))
+	session, err := r.service.Delete(c.Request.Context(), c.Param("id"))
 	if err != nil {
 		return err
 	}
 
-	return c.Write(nurse)
+	return c.Write(session)
 }
