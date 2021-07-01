@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"database/sql"
 	"backend/internal/album"
 	"backend/internal/auth"
 	"backend/internal/config"
@@ -12,6 +10,9 @@ import (
 	"backend/pkg/accesslog"
 	"backend/pkg/dbcontext"
 	"backend/pkg/log"
+	"context"
+	"crypto/tls"
+	"database/sql"
 	"flag"
 	"fmt"
 	"github.com/go-ozzo/ozzo-dbx"
@@ -19,6 +20,7 @@ import (
 	"github.com/go-ozzo/ozzo-routing/v2/content"
 	"github.com/go-ozzo/ozzo-routing/v2/cors"
 	_ "github.com/lib/pq"
+	"golang.org/x/crypto/acme/autocert"
 	"net/http"
 	"os"
 	"time"
@@ -36,14 +38,26 @@ func main() {
 	// create root logger tagged with server version
 	logger := log.New().With(nil, "version", Version)
 
-	// check if path exists
-	if err := os.Mkdir("/path/to/whatever", 0755); os.IsExist(err) {
-		// triggers if dir already exists
+	// check if path ssl exists
+	if path, err := os.Getwd(); err == nil {
+		if err := os.Mkdir(path+"/certs", 0755); !os.IsExist(err) {
+			logger.Info("Creating path: "+path+"/certs")
+		}
 	}
 
+	certManager := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist("docker-core.ml"), //Your domain here
+		Cache:      autocert.DirCache("certs"),            //Folder for storing certificates
+	}
+
+
+
 	if path, err := os.Getwd(); err == nil {
-		if err := os.Mkdir(path+"/storage/diagrams", 0755); !os.IsExist(err) {
-			logger.Info("Creating path: "+path+"/storage/diagrams")
+		if err := os.Mkdir(path+"/storage", 0755); !os.IsExist(err) {
+			if err := os.Mkdir(path+"/storage/diagrams", 0755); !os.IsExist(err) {
+				logger.Info("Creating path: "+path+"/storage/diagrams")
+			}
 		}
 	}
 
@@ -73,12 +87,17 @@ func main() {
 	hs := &http.Server{
 		Addr:    address,
 		Handler: buildHandler(logger, dbcontext.New(db), cfg),
+		TLSConfig: &tls.Config{
+			GetCertificate: certManager.GetCertificate,
+		},
 	}
+
+	go http.ListenAndServe(":http", certManager.HTTPHandler(nil))
 
 	// start the HTTP server with graceful shutdown
 	go routing.GracefulShutdown(hs, 10*time.Second, logger.Infof)
 	logger.Infof("server %v is running at %v", Version, address)
-	if err := hs.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+	if err := hs.ListenAndServeTLS("",""); err != nil && err != http.ErrServerClosed {
 		logger.Error(err)
 		os.Exit(-1)
 	}
