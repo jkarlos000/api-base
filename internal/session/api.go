@@ -1,10 +1,10 @@
-package nurse
+package session
 
 import (
-	"encoding/json"
 	"backend/internal/errors"
 	"backend/pkg/log"
 	"backend/pkg/pagination"
+	"encoding/json"
 	"github.com/go-ozzo/ozzo-routing/v2"
 	"net/http"
 )
@@ -13,15 +13,15 @@ import (
 func RegisterHandlers(r *routing.RouteGroup, service Service, authHandler routing.Handler, logger log.Logger) {
 	res := resource{service, logger}
 
-	r.Get("/nurses/<id>", res.get)
-	r.Get("/nurses", res.query)
+	r.Get("/sessions/<id>", res.get)
+	r.Get("/sessions", res.query)
 
 	r.Use(authHandler)
 
 	// the following endpoints require a valid JWT
-	r.Post("/nurses", res.create)
-	r.Put("/nurses/<id>", res.update)
-	r.Delete("/nurses/<id>", res.delete)
+	r.Post("/sessions", res.create)
+	r.Put("/sessions/<id>", res.update)
+	r.Delete("/sessions/<id>", res.delete)
 }
 
 type resource struct {
@@ -51,11 +51,11 @@ func (r resource) query(c *routing.Context) error {
 		return err
 	}
 	pages := pagination.NewFromRequest(c.Request, count)
-	nurses, err := r.service.Query(ctx, pages.Offset(), pages.Limit(), term, filters)
+	sessions, err := r.service.Query(ctx, pages.Offset(), pages.Limit(), term, filters)
 	if err != nil {
 		return err
 	}
-	pages.Items = nurses
+	pages.Items = sessions
 	return c.Write(pages)
 }
 

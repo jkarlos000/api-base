@@ -6,7 +6,7 @@ import (
 	"backend/internal/config"
 	"backend/internal/errors"
 	"backend/internal/healthcheck"
-	"backend/internal/nurse"
+	"backend/internal/session"
 	"backend/pkg/accesslog"
 	"backend/pkg/dbcontext"
 	"backend/pkg/log"
@@ -50,8 +50,6 @@ func main() {
 		HostPolicy: autocert.HostWhitelist("docker-core.ml"), //Your domain here
 		Cache:      autocert.DirCache("certs"),            //Folder for storing certificates
 	}
-
-
 
 	if path, err := os.Getwd(); err == nil {
 		if err := os.Mkdir(path+"/storage", 0755); !os.IsExist(err) {
@@ -127,8 +125,8 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 		authHandler, logger,
 	)
 
-	nurse.RegisterHandlers(rg.Group(""),
-		nurse.NewService(nurse.NewRepository(db, logger), logger),
+	session.RegisterHandlers(rg.Group(""),
+		session.NewService(session.NewRepository(db, logger), logger),
 		authHandler, logger,
 	)
 
