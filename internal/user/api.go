@@ -1,10 +1,10 @@
 package user
 
 import (
-	"encoding/json"
 	"backend/internal/errors"
 	"backend/pkg/log"
 	"backend/pkg/pagination"
+	"encoding/json"
 	"net/http"
 
 	routing "github.com/go-ozzo/ozzo-routing/v2"
@@ -14,13 +14,13 @@ import (
 func RegisterHandlers(r *routing.RouteGroup, service Service, authHandler routing.Handler, logger log.Logger) {
 	res := resource{service, logger}
 
+	r.Post("/users", res.create)
 	r.Use(authHandler)
 
 	// the following endpoints require a valid JWT
 	r.Get("/users/me", res.me)
 	r.Get("/users/<id>", res.get)
 	r.Get("/users", res.query)
-	r.Post("/users", res.create)
 	// r.Put("/users/<id>", res.update)
 	// r.Delete("/users/<id>", res.delete)
 }

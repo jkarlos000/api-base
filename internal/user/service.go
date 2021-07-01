@@ -1,11 +1,12 @@
 package user
 
 import (
-	"backend/internal/auth"
 	"backend/internal/entity"
 	"backend/internal/errors"
 	"backend/pkg/log"
 	"context"
+	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"regexp"
 	"strings"
 	"time"
@@ -34,7 +35,7 @@ type CreateUserRequest struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Username  string `json:"username"`
-	Password  string `json:"password"`
+	Password  *string `json:"password"`
 	Email		string `json:"email"`
 }
 
@@ -54,8 +55,9 @@ type UpdateUserRequest struct {
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Username  string `json:"username"`
-	Password  string `json:"password"`
+	Password  *string `json:"password"`
 	Email		string `json:"email"`
+	IsActive	*bool `json:"is_active"`
 }
 
 // Validate validates the CreateUserRequest fields.
@@ -64,7 +66,7 @@ func (m UpdateUserRequest) Validate() error {
 		validation.Field(&m.FirstName, validation.Required, validation.Length(3, 50), validation.Match(regexp.MustCompile("^([A-Za-z']+ )+[A-Za-z']+$|^[A-Za-z']+$"))),
 		validation.Field(&m.LastName, validation.Required, validation.Length(3, 50), validation.Match(regexp.MustCompile("^([A-Za-z']+ )+[A-Za-z']+$|^[A-Za-z']+$"))),
 		validation.Field(&m.Username, validation.Required, validation.Length(3, 50), validation.Match(regexp.MustCompile("^([0-9A-Za-z]+ )+[0-9A-Za-z]+$|^[0-9A-Za-z]+$"))),
-		validation.Field(&m.Password, validation.Length(0, 150)),
+		// validation.Field(&m.Password, validation.Length(0, 150)),
 		validation.Field(&m.Email, validation.Required, validation.Length(0, 150)),
 	)
 }
@@ -103,16 +105,26 @@ func (s service) Create(ctx context.Context, req CreateUserRequest) (User, error
 		return User{}, errors.BadRequest(err.Error())
 	}
 
-	identity := auth.CurrentUser(ctx)
+	// identity := auth.CurrentUser(ctx)
 	// Validate admin role
-	if !identity.HasRole("admin") {
+	/* if !identity.HasRole("admin") {
 		return User{}, errors.BadRequest("Current user has not admin role")
-	}
+	} */
 
 	req.FirstName = strings.TrimSpace(req.FirstName)
 	req.LastName = strings.TrimSpace(req.LastName)
 	req.Username = strings.TrimSpace(req.Username)
-	req.Password = strings.TrimSpace(req.Password)
+	if req.Password != nil {
+		password := strings.TrimSpace(*req.Password)
+		if len(password) > 0 {
+			hash, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.MinCost)
+			if err != nil {
+				fmt.Println(err)
+			}
+			password = string(hash)
+			req.Password = &password
+		}
+	}
 
 	id := entity.GenerateID()
 	now := time.Now()
@@ -121,7 +133,7 @@ func (s service) Create(ctx context.Context, req CreateUserRequest) (User, error
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Username:  req.Username,
-		Password:  req.Password,
+		Password:  *req.Password,
 		CreatedAt: now,
 		UpdatedAt: &now,
 	})
@@ -143,7 +155,45 @@ func (s service) Update(ctx context.Context, id string, req UpdateUserRequest) (
 	if err != nil {
 		return user, err
 	}
-	user.Username = req.Username
+	if user.Username != req.Username {
+		user.Username = req.Username
+	}
+	if user.Email != req.Email {
+		user.Email = req.Email
+	}
+
+	if user.FirstName != req.FirstName {
+		user.FirstName = req.FirstName
+	}
+
+	if user.LastName != req.LastName {
+		user.LastName = req.LastName
+	}
+
+	if req.IsActive != nil && *req.IsActive == false {
+		user.IsActive = false
+	} else {
+		user.IsActive = true
+	}
+
+	if req.Password != nil {
+		password := strings.TrimSpace(*req.Password)
+		if len(password) > 0 {
+			hash, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.MinCost)
+			if err != nil {
+				fmt.Println(err)
+			}
+			password = string(hash)
+			user.Password = password
+			user.UpdatedAt = &now
+
+			if err := s.repo.Update(ctx, user.User); err != nil {
+				return user, err
+			}
+			return user, nil
+		}
+	}
+
 	user.UpdatedAt = &now
 
 	if err := s.repo.Update(ctx, user.User); err != nil {
