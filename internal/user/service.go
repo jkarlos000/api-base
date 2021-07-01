@@ -133,6 +133,7 @@ func (s service) Create(ctx context.Context, req CreateUserRequest) (User, error
 		FirstName: req.FirstName,
 		LastName:  req.LastName,
 		Username:  req.Username,
+		Email:		req.Email,
 		Password:  *req.Password,
 		CreatedAt: now,
 		UpdatedAt: &now,

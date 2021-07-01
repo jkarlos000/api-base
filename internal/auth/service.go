@@ -1,13 +1,13 @@
 package auth
 
 import (
-	"context"
-	"backend/pkg/dbcontext"
-	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"backend/internal/entity"
 	"backend/internal/errors"
+	"backend/pkg/dbcontext"
 	"backend/pkg/log"
+	"context"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -15,7 +15,7 @@ import (
 
 // Service encapsulates the authentication logic.
 type Service interface {
-	// authenticate authenticates a user using username and password.
+	// Login authenticate authenticates a user using username and password.
 	// It returns a JWT token if authentication succeeds. Otherwise, an error is returned.
 	Login(ctx context.Context, username, password string) (string, error)
 }
@@ -24,8 +24,10 @@ type Service interface {
 type Identity interface {
 	// GetID returns the user ID.
 	GetID() string
-	// GetName returns the user username.
+	// GetUsername returns the user username.
 	GetUsername() string
+	// GetEmail returns the user email.
+	GetEmail() string
 	// GetRoles returns the user role slice.
 	GetRoles() []string
 	// HasRole returns the user username.
@@ -73,17 +75,17 @@ func (s service) authenticate(ctx context.Context, username, password string) Id
 		return nil
 	}
 
-	if err := s.db.With(ctx).Select("r.name as name").
+	/* if err := s.db.With(ctx).Select("r.name as name").
 		From("roles as r").
 		LeftJoin("role_user as ru", dbx.NewExp("r.id = ru.role_id")).
 		Where(dbx.HashExp{"ru.user_id": user.ID}).
 		Column(&user.Roles); err != nil {
 		fmt.Println(err)
 		return nil
-	}
+	} */
 
 	logger.Infof("authentication successful")
-	return entity.User{ID: user.GetID(), Username: user.GetUsername(), Roles: user.GetRoles(), IsActive: user.IsActive}
+	return entity.User{ID: user.GetID(), Username: user.GetUsername(), Email: user.GetEmail(), Roles: user.GetRoles(), IsActive: user.IsActive}
 }
 
 // generateJWT generates a JWT that encodes an identity.
@@ -91,6 +93,7 @@ func (s service) generateJWT(identity Identity) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"id":       identity.GetID(),
 		"username": identity.GetUsername(),
+		"email":	identity.GetEmail(),
 		"roles":    identity.GetRoles(),
 		"status":   identity.IsUserActive(),
 		"exp":      time.Now().Add(time.Duration(s.tokenExpiration) * time.Hour).Unix(),

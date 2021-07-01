@@ -8,7 +8,7 @@ import (
 
 // RegisterHandlers registers handlers for different HTTP requests.
 func RegisterHandlers(rg *routing.RouteGroup, service Service, logger log.Logger) {
-	rg.Post("/login", login(service, logger))
+	rg.Post("/v1/login", login(service, logger))
 }
 
 // login returns a handler that handles user login request.

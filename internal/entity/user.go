@@ -58,3 +58,7 @@ func (u User) HasRole(roles ...string) bool {
 func (u User) IsUserActive() bool {
 	return u.IsActive
 }
+
+func (u User) GetEmail() string {
+	return u.Email
+}
