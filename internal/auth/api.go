@@ -3,6 +3,7 @@ package auth
 import (
 	"backend/internal/errors"
 	"backend/pkg/log"
+	"fmt"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 )
 
@@ -13,7 +14,9 @@ func RegisterHandlers(rg *routing.RouteGroup, service Service, logger log.Logger
 
 // login returns a handler that handles user login request.
 func login(service Service, logger log.Logger) routing.Handler {
+	fmt.Println(1)
 	return func(c *routing.Context) error {
+		fmt.Println(2)
 		var req struct {
 			Username string `json:"username"`
 			Password string `json:"password"`
