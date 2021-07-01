@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-// RegisterHandlers sets up the routing of the HTTP handlers.
+// RegisterHandlers sets up the routing of the HTTP handlers for sessions.
 func RegisterHandlers(r *routing.RouteGroup, service Service, authHandler routing.Handler, logger log.Logger) {
 	res := resource{service, logger}
 
