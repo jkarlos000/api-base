@@ -8,7 +8,7 @@ CREATE TABLE sessions
     url         VARCHAR(512) NOT NULL,
     slug        VARCHAR(36) NOT NULL ,
     data        VARCHAR(512) NOT NULL,
-    is_active INT default 1 NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE NOT NULL,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL,
     deleted_at TIMESTAMP,
