@@ -123,16 +123,10 @@ func (s service) Create(ctx context.Context, req CreateUserRequest) (User, error
 				fmt.Println(err)
 			}
 			password = string(hash)
-			fmt.Println("#######################")
-			fmt.Println(*req.Password)
-			fmt.Println(password)
-			fmt.Println("#######################")
 			req.Password = &password
 		}
 	}
-	fmt.Println("¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢")
-	fmt.Println(*req.Password)
-	fmt.Println("¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢")
+
 	id := entity.GenerateID()
 	now := time.Now()
 	err := s.repo.Create(ctx, entity.User{
