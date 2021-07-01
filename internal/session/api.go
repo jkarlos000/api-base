@@ -34,7 +34,7 @@ func (r resource) get(c *routing.Context) error {
 	if err != nil {
 		return err
 	}
-
+  
 	return c.Write(session)
 }
 
@@ -61,11 +61,14 @@ func (r resource) query(c *routing.Context) error {
 
 func (r resource) create(c *routing.Context) error {
 	var input CreateSessionRequest
+  
 	if err := c.Read(&input); err != nil {
 		r.logger.With(c.Request.Context()).Info(err)
 		return errors.BadRequest("")
 	}
+  
 	session, err := r.service.Create(c.Request.Context(), input)
+
 	if err != nil {
 		return err
 	}
@@ -75,21 +78,24 @@ func (r resource) create(c *routing.Context) error {
 
 func (r resource) update(c *routing.Context) error {
 	var input UpdateSessionRequest
+
 	if err := c.Read(&input); err != nil {
 		r.logger.With(c.Request.Context()).Info(err)
 		return errors.BadRequest("")
 	}
 
 	session, err := r.service.Update(c.Request.Context(), c.Param("id"), input)
+
 	if err != nil {
 		return err
 	}
-
+  
 	return c.Write(session)
 }
 
 func (r resource) delete(c *routing.Context) error {
 	session, err := r.service.Delete(c.Request.Context(), c.Param("id"))
+
 	if err != nil {
 		return err
 	}
