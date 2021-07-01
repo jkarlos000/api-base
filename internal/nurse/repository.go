@@ -2,9 +2,9 @@ package nurse
 
 import (
 	"context"
-	"enfermeria/internal/entity"
-	"enfermeria/pkg/dbcontext"
-	"enfermeria/pkg/log"
+	"backend/internal/entity"
+	"backend/pkg/dbcontext"
+	"backend/pkg/log"
 	"fmt"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 )

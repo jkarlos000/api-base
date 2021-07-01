@@ -2,9 +2,9 @@ package album
 
 import (
 	"context"
-	"enfermeria/internal/entity"
-	"enfermeria/pkg/dbcontext"
-	"enfermeria/pkg/log"
+	"backend/internal/entity"
+	"backend/pkg/dbcontext"
+	"backend/pkg/log"
 )
 
 // Repository encapsulates the logic to access albums from the data source.

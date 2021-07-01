@@ -2,7 +2,7 @@ package accesslog
 
 import (
 	routing "github.com/go-ozzo/ozzo-routing/v2"
-	"enfermeria/pkg/log"
+	"backend/pkg/log"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"

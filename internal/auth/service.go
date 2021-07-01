@@ -2,12 +2,12 @@ package auth
 
 import (
 	"context"
-	"enfermeria/pkg/dbcontext"
+	"backend/pkg/dbcontext"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
-	"enfermeria/internal/entity"
-	"enfermeria/internal/errors"
-	"enfermeria/pkg/log"
+	"backend/internal/entity"
+	"backend/internal/errors"
+	"backend/pkg/log"
 	dbx "github.com/go-ozzo/ozzo-dbx"
 	"golang.org/x/crypto/bcrypt"
 	"time"

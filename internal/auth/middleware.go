@@ -2,8 +2,8 @@ package auth
 
 import (
 	"context"
-	"enfermeria/internal/entity"
-	"enfermeria/internal/errors"
+	"backend/internal/entity"
+	"backend/internal/errors"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	routing "github.com/go-ozzo/ozzo-routing/v2"

@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 	"database/sql"
-	"enfermeria/internal/album"
-	"enfermeria/internal/auth"
-	"enfermeria/internal/config"
-	"enfermeria/internal/errors"
-	"enfermeria/internal/healthcheck"
-	"enfermeria/internal/nurse"
-	"enfermeria/pkg/accesslog"
-	"enfermeria/pkg/dbcontext"
-	"enfermeria/pkg/log"
+	"backend/internal/album"
+	"backend/internal/auth"
+	"backend/internal/config"
+	"backend/internal/errors"
+	"backend/internal/healthcheck"
+	"backend/internal/nurse"
+	"backend/pkg/accesslog"
+	"backend/pkg/dbcontext"
+	"backend/pkg/log"
 	"flag"
 	"fmt"
 	"github.com/go-ozzo/ozzo-dbx"
@@ -101,7 +101,7 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 
 	authHandler := auth.Handler(cfg.JWTSigningKey)
 
-	// lógica para enfermeria.
+	// lógica para backend.
 
 	album.RegisterHandlers(rg.Group(""),
 		album.NewService(album.NewRepository(db, logger), logger),

@@ -3,9 +3,9 @@ package test
 import (
 	dbx "github.com/go-ozzo/ozzo-dbx"
 	_ "github.com/lib/pq" // initialize posgresql for test
-	"enfermeria/internal/config"
-	"enfermeria/pkg/dbcontext"
-	"enfermeria/pkg/log"
+	"backend/internal/config"
+	"backend/pkg/dbcontext"
+	"backend/pkg/log"
 	"path"
 	"runtime"
 	"testing"

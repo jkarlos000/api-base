@@ -4,7 +4,7 @@ package accesslog
 import (
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/go-ozzo/ozzo-routing/v2/access"
-	"enfermeria/pkg/log"
+	"backend/pkg/log"
 	"net/http"
 	"time"
 )
