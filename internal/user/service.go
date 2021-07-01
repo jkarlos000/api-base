@@ -114,18 +114,25 @@ func (s service) Create(ctx context.Context, req CreateUserRequest) (User, error
 	req.FirstName = strings.TrimSpace(req.FirstName)
 	req.LastName = strings.TrimSpace(req.LastName)
 	req.Username = strings.TrimSpace(req.Username)
+	req.Email = strings.TrimSpace(req.Email)
+	password := strings.TrimSpace(*req.Password)
 	if req.Password != nil {
-		password := strings.TrimSpace(*req.Password)
 		if len(password) > 0 {
 			hash, err := bcrypt.GenerateFromPassword([]byte(*req.Password), bcrypt.MinCost)
 			if err != nil {
 				fmt.Println(err)
 			}
 			password = string(hash)
+			fmt.Println("#######################")
+			fmt.Println(*req.Password)
+			fmt.Println(password)
+			fmt.Println("#######################")
 			req.Password = &password
 		}
 	}
-
+	fmt.Println("¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢")
+	fmt.Println(*req.Password)
+	fmt.Println("¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢¢")
 	id := entity.GenerateID()
 	now := time.Now()
 	err := s.repo.Create(ctx, entity.User{
@@ -134,9 +141,10 @@ func (s service) Create(ctx context.Context, req CreateUserRequest) (User, error
 		LastName:  req.LastName,
 		Username:  req.Username,
 		Email:		req.Email,
-		Password:  *req.Password,
+		Password:  password,
 		CreatedAt: now,
 		UpdatedAt: &now,
+		IsActive: true,
 	})
 	if err != nil {
 		return User{}, err

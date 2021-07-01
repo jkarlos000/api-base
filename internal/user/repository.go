@@ -10,7 +10,6 @@ import (
 	"fmt"
 
 	dbx "github.com/go-ozzo/ozzo-dbx"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // Repository encapsulates the logic to access users from the data source.
@@ -82,27 +81,6 @@ func (r repository) Create(ctx context.Context, user entity.User) error {
 		return errors.BadRequest("username already exists")
 	}
 
-	/*if err := r.db.With(ctx).Select("COUNT(*)").From("roles").Where(dbx.HashExp{"id": user.RoleID}).Row(&count); err != nil {
-		return err
-	}
-
-	if count == 0 {
-		return errors.BadRequest("role already not exists")
-	}*/
-
-	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.MinCost)
-	if err != nil {
-		return err
-	}
-
-	/*if _, err := r.db.With(ctx).Insert("role_user", dbx.Params{
-		"role_id": user.RoleID,
-		"user_id": user.ID,
-	}).Execute(); err != nil {
-		return err
-	}*/
-
-	user.Password = string(hash)
 	user.IsActive = true
 
 	return r.db.With(ctx).Model(&user).Insert()

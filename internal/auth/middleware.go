@@ -1,9 +1,9 @@
 package auth
 
 import (
-	"context"
 	"backend/internal/entity"
 	"backend/internal/errors"
+	"context"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
@@ -29,6 +29,7 @@ func handleToken(c *routing.Context, token *jwt.Token) error {
 		c.Request.Context(),
 		token.Claims.(jwt.MapClaims)["id"].(string),
 		token.Claims.(jwt.MapClaims)["username"].(string),
+		token.Claims.(jwt.MapClaims)["email"].(string),
 		roles,
 		token.Claims.(jwt.MapClaims)["status"].(bool),
 	)
@@ -44,8 +45,8 @@ const (
 )
 
 // WithUser returns a context that contains the user identity from the given JWT.
-func WithUser(ctx context.Context, id, username string, roles []string, isActive bool) context.Context {
-	return context.WithValue(ctx, userKey, entity.User{ID: id, Username: username, Roles: roles, IsActive: isActive})
+func WithUser(ctx context.Context, id, username, email string, roles []string, isActive bool) context.Context {
+	return context.WithValue(ctx, userKey, entity.User{ID: id, Username: username, Email: email, Roles: roles, IsActive: isActive})
 }
 
 // CurrentUser returns the user identity from the given context.
@@ -66,7 +67,7 @@ func MockAuthHandler(c *routing.Context) error {
 	if c.Request.Header.Get("Authorization") != "TEST" {
 		return errors.Unauthorized("")
 	}
-	ctx := WithUser(c.Request.Context(), "100", "Tester", []string{"admin"}, true)
+	ctx := WithUser(c.Request.Context(), "100", "Tester", "tester@test.test", []string{"admin"}, true)
 	c.Request = c.Request.WithContext(ctx)
 	return nil
 }
