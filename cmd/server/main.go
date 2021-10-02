@@ -1,7 +1,6 @@
 package main
 
 import (
-	"backend/internal/album"
 	"backend/internal/auth"
 	"backend/internal/config"
 	"backend/internal/errors"
@@ -42,20 +41,20 @@ func main() {
 	// check if path ssl exists
 	if path, err := os.Getwd(); err == nil {
 		if err := os.Mkdir(path+"/certs", 0755); !os.IsExist(err) {
-			logger.Info("Creating path: "+path+"/certs")
+			logger.Info("Creating path: " + path + "/certs")
 		}
 	}
 
 	certManager := autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist("docker-core.ml"), //Your domain here
-		Cache:      autocert.DirCache("certs"),            //Folder for storing certificates
+		Cache:      autocert.DirCache("certs"),               //Folder for storing certificates
 	}
 
 	if path, err := os.Getwd(); err == nil {
 		if err := os.Mkdir(path+"/storage", 0755); !os.IsExist(err) {
 			if err := os.Mkdir(path+"/storage/diagrams", 0755); !os.IsExist(err) {
-				logger.Info("Creating path: "+path+"/storage/diagrams")
+				logger.Info("Creating path: " + path + "/storage/diagrams")
 			}
 		}
 	}
@@ -96,7 +95,7 @@ func main() {
 	// start the HTTP server with graceful shutdown
 	go routing.GracefulShutdown(hs, 10*time.Second, logger.Infof)
 	logger.Infof("server %v is running at %v", Version, address)
-	if err := hs.ListenAndServeTLS("",""); err != nil && err != http.ErrServerClosed {
+	if err := hs.ListenAndServeTLS("", ""); err != nil && err != http.ErrServerClosed {
 		logger.Error(err)
 		os.Exit(-1)
 	}
@@ -121,15 +120,10 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 
 	// lógica para backend.
 
-	album.RegisterHandlers(rg.Group(""),
+	/*album.RegisterHandlers(rg.Group(""),
 		album.NewService(album.NewRepository(db, logger), logger),
 		authHandler, logger,
-	)
-
-	session.RegisterHandlers(rg.Group(""),
-		session.NewService(session.NewRepository(db, logger), logger),
-		authHandler, logger,
-	)
+	)*/
 
 	auth.RegisterHandlers(rg.Group(""),
 		auth.NewService(db, cfg.JWTSigningKey, cfg.JWTExpiration, logger),
@@ -138,7 +132,7 @@ func buildHandler(logger log.Logger, db *dbcontext.DB, cfg *config.Config) http.
 
 	user.RegisterHandlers(rg.Group(""),
 		user.NewService(user.NewRepository(db, logger), logger),
-		authHandler,logger,
+		authHandler, logger,
 	)
 
 	router.Get("/*", f.Server(f.PathMap{
