@@ -5,7 +5,6 @@ import (
 	"backend/internal/config"
 	"backend/internal/errors"
 	"backend/internal/healthcheck"
-	"backend/internal/session"
 	"backend/internal/user"
 	"backend/pkg/accesslog"
 	"backend/pkg/dbcontext"
