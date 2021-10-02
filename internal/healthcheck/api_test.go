@@ -1,8 +1,8 @@
 package healthcheck
 
 import (
-	"enfermeria/internal/test"
-	"enfermeria/pkg/log"
+	"backend/internal/test"
+	"backend/pkg/log"
 	"net/http"
 	"testing"
 )

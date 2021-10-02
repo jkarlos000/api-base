@@ -12,7 +12,7 @@ jobs:
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: go_restful
+          POSTGRES_DB: scd
         ports:
           - 5432/tcp
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
@@ -42,7 +42,6 @@ jobs:
           go get golang.org/x/tools/cmd/cover
           go get github.com/mattn/goveralls
           go get golang.org/x/lint/golint
-
       - name: Run go lint
         run: make lint
 
@@ -51,11 +50,10 @@ jobs:
 
       - name: Test
         env:
-          APP_DSN: postgres://127.0.0.1:${{ job.services.postgres.ports[5432] }}/go_restful?sslmode=disable&user=postgres&password=postgres
+          APP_DSN: postgres://127.0.0.1:${{ job.services.postgres.ports[5432] }}/scd?sslmode=disable&user=postgres&password=postgres
         run: |
           make migrate
           make test-cover
-
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:

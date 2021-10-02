@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
-	"enfermeria/pkg/log"
+	"backend/pkg/log"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

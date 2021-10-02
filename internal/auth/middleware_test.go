@@ -3,7 +3,7 @@ package auth
 import (
 	"context"
 	"github.com/dgrijalva/jwt-go"
-	"enfermeria/internal/test"
+	"backend/internal/test"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
