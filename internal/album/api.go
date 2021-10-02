@@ -2,9 +2,9 @@ package album
 
 import (
 	"github.com/go-ozzo/ozzo-routing/v2"
-	"enfermeria/internal/errors"
-	"enfermeria/pkg/log"
-	"enfermeria/pkg/pagination"
+	"backend/internal/errors"
+	"backend/pkg/log"
+	"backend/pkg/pagination"
 	"net/http"
 )
 

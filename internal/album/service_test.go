@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"enfermeria/internal/entity"
-	"enfermeria/pkg/log"
+	"backend/internal/entity"
+	"backend/pkg/log"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )

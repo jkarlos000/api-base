@@ -4,9 +4,9 @@ import (
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 	"github.com/go-ozzo/ozzo-routing/v2/content"
 	"github.com/go-ozzo/ozzo-routing/v2/cors"
-	"enfermeria/internal/errors"
-	"enfermeria/pkg/accesslog"
-	"enfermeria/pkg/log"
+	"backend/internal/errors"
+	"backend/pkg/accesslog"
+	"backend/pkg/log"
 	"net/http"
 	"net/http/httptest"
 )

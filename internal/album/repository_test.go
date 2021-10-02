@@ -3,9 +3,9 @@ package album
 import (
 	"context"
 	"database/sql"
-	"enfermeria/internal/entity"
-	"enfermeria/internal/test"
-	"enfermeria/pkg/log"
+	"backend/internal/entity"
+	"backend/internal/test"
+	"backend/pkg/log"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

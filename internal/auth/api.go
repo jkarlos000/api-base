@@ -1,14 +1,14 @@
 package auth
 
 import (
+	"backend/internal/errors"
+	"backend/pkg/log"
 	routing "github.com/go-ozzo/ozzo-routing/v2"
-	"enfermeria/internal/errors"
-	"enfermeria/pkg/log"
 )
 
 // RegisterHandlers registers handlers for different HTTP requests.
 func RegisterHandlers(rg *routing.RouteGroup, service Service, logger log.Logger) {
-	rg.Post("/login", login(service, logger))
+	rg.Post("/login", login(service, logger))  // /v1/login
 }
 
 // login returns a handler that handles user login request.
@@ -29,7 +29,7 @@ func login(service Service, logger log.Logger) routing.Handler {
 			return err
 		}
 		return c.Write(struct {
-			Token string `json:"token"`
+			Token string `json:"access_token"`
 		}{token})
 	}
 }
