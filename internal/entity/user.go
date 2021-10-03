@@ -59,6 +59,7 @@ func (u User) IsUserActive() bool {
 	return u.IsActive
 }
 
+// GetEmail returns the user email.
 func (u User) GetEmail() string {
 	return u.Email
 }

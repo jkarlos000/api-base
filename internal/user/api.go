@@ -1,12 +1,9 @@
 package user
 
 import (
-	"backend/internal/errors"
 	"backend/pkg/log"
 	"backend/pkg/pagination"
 	"encoding/json"
-	"net/http"
-
 	routing "github.com/go-ozzo/ozzo-routing/v2"
 )
 
@@ -33,15 +30,6 @@ func (r resource) get(c *routing.Context) error {
 	return c.Write(user)
 }
 
-func (r resource) me(c *routing.Context) error {
-	user, err := r.service.Me(c.Request.Context())
-	if err != nil {
-		return err
-	}
-
-	return c.Write(user)
-}
-
 func (r resource) query(c *routing.Context) error {
 	term := c.Query("term")
 	filters := make(map[string]interface{})
@@ -61,19 +49,4 @@ func (r resource) query(c *routing.Context) error {
 	}
 	pages.Items = users
 	return c.Write(pages)
-}
-
-
-func (r resource) create(c *routing.Context) error {
-	var input CreateUserRequest
-	if err := c.Read(&input); err != nil {
-		r.logger.With(c.Request.Context()).Info(err)
-		return errors.BadRequest("")
-	}
-	user, err := r.service.Create(c.Request.Context(), input)
-	if err != nil {
-		return err
-	}
-
-	return c.WriteWithStatus(user, http.StatusCreated)
 }
