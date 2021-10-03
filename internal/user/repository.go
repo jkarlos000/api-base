@@ -2,6 +2,7 @@ package user
 
 import (
 	"backend/internal/entity"
+	"backend/internal/errors"
 	"backend/pkg/dbcontext"
 	"backend/pkg/log"
 	"context"
@@ -18,6 +19,8 @@ type Repository interface {
 	Count(ctx context.Context) (int, error)
 	// Query returns the list of users with the given offset and limit.
 	Query(ctx context.Context, offset, limit int, term string, filters map[string]interface{}) ([]entity.User, error)
+	// Create saves a new user in the storage.
+	Create(ctx context.Context, user entity.User) error
 }
 
 // repository persists users in database
@@ -76,4 +79,21 @@ func (r repository) Query(ctx context.Context, offset, limit int, term string, f
 		Limit(int64(limit)).
 		All(&users)
 	return users, err
+}
+// Create saves a new user record in the database.
+// It returns the ID of the newly inserted user record.
+func (r repository) Create(ctx context.Context, user entity.User) error {
+	var count int
+
+	if err := r.db.With(ctx).Select("COUNT(*)").From("users").Where(dbx.HashExp{"username": user.Username}).Row(&count); err != nil {
+		return err
+	}
+
+	if count > 0 {
+		return errors.BadRequest("username already exists")
+	}
+
+	user.IsActive = true
+
+	return r.db.With(ctx).Model(&user).Insert()
 }
